@@ -1,8 +1,15 @@
 #include <SFML/Graphics.hpp>
+#include "Bullet.h"
+#include "Asteroid.h"
+#include "Hitbox.h"
 
-const double SHIP_SPEED = 0.08;
+const double SHIP_SPEED = 0.1;
 
 class Ship {
+private:
+    static constexpr float SHIP_RADIUS = 10.0f;
+    Hitbox hitbox;
+    int collisionCount;
 public:
     // Obtener coodenadas en main
     double getX() const {
@@ -12,10 +19,33 @@ public:
     double getY() const {
         return y;
     }
+    
+    bool checkCollision(const sf::Vector2f& objectPosition, float objectSize) const {
+        sf::FloatRect shipBounds = shape.getGlobalBounds();
+        sf::FloatRect objectBounds(objectPosition.x, objectPosition.y, objectSize, objectSize);
+
+        return shipBounds.intersects(objectBounds);
+    }
+
+    void incrementCollisionCount() {
+        collisionCount++;
+    }
+
+    std::vector<Bullet> bullets;
+    sf::Clock shootTimer;  // Temporizador para controlar los intervalos de disparo
+    sf::Time shootInterval = sf::seconds(0.15);  // Intervalo entre disparos
+    bool hasCollided ;
+    int getCollisionCount() const {
+        return collisionCount;
+    }
+
+
+
+
     Ship(double screenWidth, double screenHeight)
         : angle(0.0), x(screenWidth / 2.0), y(screenHeight / 2.0), speed(0.0),
-        acceleration(0.2), rotationSpeed(0.07), SCREEN_WIDTH(screenWidth), SCREEN_HEIGHT(screenHeight) {
-
+        acceleration(0.2), rotationSpeed(0.07), SCREEN_WIDTH(screenWidth),
+        SCREEN_HEIGHT(screenHeight), hasCollided(false), hitbox(x, y, 50.0, 50.0) {
         // Triangulo nave con outline azul *astretic*
         shape.setPointCount(3);
         shape.setPoint(0, sf::Vector2f(-10.0, 10.0));
@@ -84,6 +114,30 @@ public:
 
     void rotateRight() {
         angle += rotationSpeed;
+    }
+    
+    void update(sf::RenderWindow& window) {
+
+        hitbox.update(x, y);
+
+        // Disparar solo si ha pasado el tiempo del intervalo
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && shootTimer.getElapsedTime() >= shootInterval) {
+            // Disparar una nueva bala
+            bullets.push_back(Bullet(x, y, angle));
+
+            // Reiniciar el temporizador
+            shootTimer.restart();
+        }
+
+        // Actualizar balas
+        for (auto& bullet : bullets) {
+            bullet.update();
+        }
+
+        // Eliminar balas fuera de la pantalla
+        bullets.erase(std::remove_if(bullets.begin(), bullets.end(),
+            [&](const Bullet& bullet) { return bullet.isOutsideWindow(window); }),
+            bullets.end());
     }
 
     sf::ConvexShape shape;
