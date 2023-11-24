@@ -17,6 +17,8 @@ Solo corre en sistema operativo winwows esta version.
 * agregar en "library directories " la dirección de la ruta de SFML/LIB
 * Mover los archivos .dll de la carpeta SFML/ BIN a la ruta raíz del proyecto
 
+[tutorial para mas ayuda](https://youtu.be/EVnmVdEPyUQ?feature=shared)
+
 ## Que tiene que hacer?
 Este es el ultimo avance y por mas que nos peleamos (mi amigo que me ayuda, yo y el visual) las coliciones entre la nave y los asteroides sigue sin funcionar por el momento.
 
